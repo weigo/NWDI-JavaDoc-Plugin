@@ -1,0 +1,15 @@
+BODY {
+	FONT-SIZE: 9pt;
+	CURSOR: default;
+	FONT-FAMILY: Tahoma, Verdana, Times, Sans Serif;
+	background-color: white;
+	width: 800px;
+}
+
+H1 {
+	FONT-SIZE: 12pt;
+}
+
+H2 {
+	FONT-SIZE: 10pt;
+}
