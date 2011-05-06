@@ -77,6 +77,20 @@ final class JavaDocExecutor {
         proxy = (InetSocketAddress)Hudson.getInstance().proxy.createProxy().address();
     }
 
+    /**
+     * Create an executor for executing the Javadoc ant task using the given ant
+     * helper object and links to related javadoc documentation.
+     *
+     * @param developmentConfiguration
+     *
+     * @param antHelper
+     *            helper for populating an ant task with source filesets and
+     *            class path for a given development component
+     * @param links
+     *            links to add to existing javadoc documentation
+     * @param proxy
+     *            the wwwproxy to use for referencing external javadocs.
+     */
     JavaDocExecutor(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
         final DevelopmentComponentFactory dcFactory, Collection<URL> links, InetSocketAddress proxy) {
         this.developmentConfiguration = developmentConfiguration;
@@ -123,6 +137,15 @@ final class JavaDocExecutor {
         task.execute();
     }
 
+    /**
+     * Returns the source version to use for generating javadoc documentation.
+     *
+     * Uses the {@link JdkHomeAlias} defined in the development configuration.
+     * If there is no alias defined use the JDK version the ant task is run
+     * with.
+     *
+     * @return java source version to use generating javadoc documentation.
+     */
     private String getSourceVersion() {
         JdkHomeAlias alias = this.developmentConfiguration.getJdkHomeAlias();
         String sourceVersion;
@@ -137,6 +160,16 @@ final class JavaDocExecutor {
         return sourceVersion;
     }
 
+    /**
+     * Set links to external javadocs. Dependencies will be determined from the
+     * given DC and the links configured in the respective project.
+     *
+     * @param task
+     *            JavaDoc task to configure
+     * @param component
+     *            DC to use to determine which other projects (DCs) should be
+     *            referenced.
+     */
     private void setLinks(final Javadoc task, final DevelopmentComponent component) {
         for (URL linkURL : this.links) {
             LinkArgument link = task.createLink();
@@ -155,6 +188,13 @@ final class JavaDocExecutor {
         }
     }
 
+    /**
+     * Set the file sets to generate javadoc documentation from.
+     *
+     * @param project the containinig project.
+     * @param task the task to configure.
+     * @param sources file sets to add.
+     */
     private void setFileSets(Project project, Javadoc task, Collection<FileSet> sources) {
         for (final FileSet source : sources) {
             source.setProject(project);
@@ -182,25 +222,5 @@ final class JavaDocExecutor {
     private String getJavaDocFolder(DevelopmentComponent component) {
         return String.format("%s/javadoc/%s~%s", this.antHelper.getPathToWorkspace(), component.getVendor(),
             component.getName().replace('/', '~')).replace('/', File.separatorChar);
-    }
-
-    public static final void main(String args[]) {
-        DevelopmentConfiguration developmentConfiguration = new DevelopmentConfiguration("PN3_Libs70_D");
-        Compartment compartment =
-            new Compartment("LIBJEE", CompartmentState.Source, "gisa.de", "Libraries für NW 7.0", "LIBJEE");
-        developmentConfiguration.add(compartment);
-        DevelopmentComponentFactory dcFactory = new DevelopmentComponentFactory();
-        DevelopmentComponent component = dcFactory.create("gisa.de", "lib/security/api/test/helper");
-        component.addSourceFolder("src/packages");
-        // component.addSourceFolder("test/packages");
-
-        compartment.add(component);
-        AntHelper antHelper =
-            new AntHelper("C:/tmp/hudson/jobs/libjee/workspace", dcFactory, new ExcludesFactory(), new PrintStream(
-                System.err));
-
-        JavaDocExecutor executor =
-            new JavaDocExecutor(developmentConfiguration, antHelper, dcFactory, new HashSet<URL>(), null);
-        executor.execute(component);
     }
 }
