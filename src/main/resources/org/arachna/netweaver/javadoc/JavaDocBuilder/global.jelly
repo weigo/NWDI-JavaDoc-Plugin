@@ -17,14 +17,5 @@
       is mapped to our webapp/ directory, so this is a convenient way to serve
       static resources.
     -->
-    <f:entry title="French"
-      description="Check if we should say hello in French"
-      help="/plugin/NWDI-JavaDoc-Plugin/help-globalConfig.html">
-      <!--
-        We'll have on input field. The 'descriptor' variable represents our descriptor
-        object, so we use that to determine the initial value for this form.
-      -->
-      <f:checkbox name="useFrench" checked="${descriptor.useFrench()}" />
-    </f:entry>
   </f:section>
 </j:jelly>
