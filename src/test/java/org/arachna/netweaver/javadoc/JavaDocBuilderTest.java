@@ -13,10 +13,8 @@ import org.arachna.netweaver.dc.types.CompartmentState;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentType;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
-import org.arachna.netweaver.javadoc.JavaDocBuilder;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Node;
 
 /**
  * @author g526521
@@ -37,15 +35,18 @@ public final class JavaDocBuilderTest {
     public void setUp() {
         this.builder = new JavaDocBuilder("");
         this.config = new DevelopmentConfiguration("DI1_Example_D");
+        this.config.setCaption("example track");
         Compartment compartment =
-            new Compartment("example.com_EXAMPLE_SC1_1", CompartmentState.Source, "example.com", "", "EXAMPLE_SC1");
+            new Compartment("example.com_EXAMPLE_SC1_1", CompartmentState.Source, "example.com",
+                "example.com_EXAMPLE_SC1_1", "EXAMPLE_SC1");
         compartment.add(new DevelopmentComponent("example.com", "DC1", DevelopmentComponentType.Java));
         compartment.add(new DevelopmentComponent("example.com", "DC2", DevelopmentComponentType.Java));
 
         this.config.add(compartment);
 
         compartment =
-            new Compartment("example.com_EXAMPLE_SC2_1", CompartmentState.Source, "example.com", "", "EXAMPLE_SC2");
+            new Compartment("example.com_EXAMPLE_SC2_1", CompartmentState.Source, "example.com",
+                "example.com_EXAMPLE_SC2_1", "EXAMPLE_SC2");
         compartment.add(new DevelopmentComponent("example.com", "DC3", DevelopmentComponentType.Java));
         compartment.add(new DevelopmentComponent("example.com", "DC4", DevelopmentComponentType.Java));
 
