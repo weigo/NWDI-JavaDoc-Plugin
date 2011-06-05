@@ -1,4 +1,5 @@
 <!-- This view is used to render the installed plugins page. -->
 <div>
-	${%The NWDI-JavaDoc-Plugin creates JavaDoc documentation for SAP NetWeaver development components.}
+	The NWDI-JavaDoc-Plugin creates JavaDoc documentation for SAP
+	NetWeaver development components.
 </div>
