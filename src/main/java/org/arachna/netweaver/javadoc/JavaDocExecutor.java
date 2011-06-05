@@ -6,21 +6,16 @@ package org.arachna.netweaver.javadoc;
 import hudson.model.Hudson;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javadoc;
 import org.apache.tools.ant.taskdefs.Javadoc.LinkArgument;
 import org.apache.tools.ant.types.FileSet;
 import org.arachna.ant.AntHelper;
-import org.arachna.ant.ExcludesFactory;
-import org.arachna.netweaver.dc.types.Compartment;
-import org.arachna.netweaver.dc.types.CompartmentState;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
