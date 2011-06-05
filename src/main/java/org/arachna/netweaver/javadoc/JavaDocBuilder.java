@@ -148,7 +148,11 @@ public class JavaDocBuilder extends Builder {
     }
 
     /**
-     * @param build
+     * Generate <code>index.html</code> as an entry point for all available
+     * JavaDoc documentation.
+     *
+     * @param configuration
+     *            {@link DevelopmentConfiguration} to generate entry page for.
      */
     protected String createIndexHtml(DevelopmentConfiguration configuration) {
         StringWriter result = new StringWriter();
@@ -248,29 +252,6 @@ public class JavaDocBuilder extends Builder {
         return components;
     }
 
-    /**
-     * @param name
-     * @return
-     */
-    private String getName(String name) {
-        int tilde = name.indexOf('~');
-
-        return (tilde > -1 ? name.substring(tilde + 1) : name).replace('~', '/');
-    }
-
-    /**
-     * Extract the vendor from the given DCs javadoc folder name.
-     *
-     * @param name
-     *            folder name containing javadoc for a DC
-     * @return
-     */
-    private String getVendor(String name) {
-        int tilde = name.indexOf('~');
-
-        return tilde > -1 ? name.substring(0, tilde - 1) : "";
-    }
-
     // Overridden for better type safety.
     // If your plugin doesn't really define any property on Descriptor,
     // you don't have to do this.
@@ -297,7 +278,7 @@ public class JavaDocBuilder extends Builder {
          */
         @Override
         public String getDisplayName() {
-            return "NWDI JavaDoc";
+            return "NWDI JavaDoc Builder";
         }
 
         @Override
