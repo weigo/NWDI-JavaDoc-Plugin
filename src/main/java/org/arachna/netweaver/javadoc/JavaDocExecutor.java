@@ -110,9 +110,8 @@ final class JavaDocExecutor {
 
         final Javadoc task = new Javadoc();
 
-        Project project = new Project();
-        task.setProject(project);
-        task.setClasspath(antHelper.createClassPath(project, component));
+        task.setProject(antHelper.getProject());
+        task.setClasspath(antHelper.createClassPath(component));
         task.setEncoding("UTF-8");
         task.setUse(true);
         task.setAuthor(true);
@@ -121,7 +120,10 @@ final class JavaDocExecutor {
         setLinks(task, component);
 
         final HashSet<String> excludes = new HashSet<String>();
-        setFileSets(project, task, antHelper.createSourceFileSets(component, excludes, excludes));
+
+        for (final FileSet source : antHelper.createSourceFileSets(component, excludes, excludes)) {
+            task.addFileset(source);
+        }
 
         setProxyConfigurationParams(task);
 
@@ -186,13 +188,15 @@ final class JavaDocExecutor {
     /**
      * Set the file sets to generate javadoc documentation from.
      *
-     * @param project the containinig project.
-     * @param task the task to configure.
-     * @param sources file sets to add.
+     * @param project
+     *            the containinig project.
+     * @param task
+     *            the task to configure.
+     * @param sources
+     *            file sets to add.
      */
     private void setFileSets(Project project, Javadoc task, Collection<FileSet> sources) {
         for (final FileSet source : sources) {
-            source.setProject(project);
             task.addFileset(source);
         }
     }

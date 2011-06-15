@@ -41,6 +41,7 @@ import org.arachna.netweaver.dc.types.CompartmentByNameComparator;
 import org.arachna.netweaver.dc.types.CompartmentState;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
+import org.arachna.netweaver.hudson.nwdi.AntTaskBuilder;
 import org.arachna.netweaver.hudson.nwdi.DCWithJavaSourceAcceptingFilter;
 import org.arachna.netweaver.hudson.nwdi.NWDIBuild;
 import org.arachna.netweaver.hudson.nwdi.NWDIProject;
@@ -55,7 +56,7 @@ import org.w3c.dom.Element;
  *
  * @author Dirk Weigenand
  */
-public class JavaDocBuilder extends Builder {
+public class JavaDocBuilder extends AntTaskBuilder {
 
     /**
      * URLs to JavaDoc generated elsewhere that should be linked into the
@@ -105,7 +106,7 @@ public class JavaDocBuilder extends Builder {
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) {
         final NWDIBuild nwdiBuild = (NWDIBuild)build;
         final JavaDocExecutor executor =
-            new JavaDocExecutor(nwdiBuild.getDevelopmentConfiguration(), nwdiBuild.getAntHelper(listener.getLogger()),
+            new JavaDocExecutor(nwdiBuild.getDevelopmentConfiguration(), getAntHelper(),
                 nwdiBuild.getDevelopmentComponentFactory(), this.links);
 
         for (final DevelopmentComponent component : nwdiBuild
