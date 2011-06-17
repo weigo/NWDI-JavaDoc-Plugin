@@ -111,7 +111,7 @@ final class JavaDocExecutor {
         final Javadoc task = new Javadoc();
 
         task.setProject(antHelper.getProject());
-        task.setClasspath(antHelper.createClassPath(component));
+//        task.setClasspath(antHelper.createClassPath(component));
         task.setEncoding("UTF-8");
         task.setUse(true);
         task.setAuthor(true);
