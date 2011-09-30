@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="javadoc" default="javadoc">
+  <path id="classpath">
+#foreach($path in $classpaths)
+    <fileset dir="$path">
+      <include name="**/*.jar" />
+    </fileset>
+#end
+  </path>
+
+  <target name="javadoc">
+    <mkdir dir="$javaDocDir" />
+    <javadoc use="true" author="true" version="true" destdir="$javaDocDir" source="$source" additionalparam="$proxy" header="$header" classpathref="classpath">
+#foreach ($source in $sourcePaths)
+    <packageset dir="$source">
+      <include name="**" />
+    </packageset>
+#end
+#foreach ($link in $links)
+      <link href="$link" />
+#end
+    </javadoc>
+  </target>
+</project>

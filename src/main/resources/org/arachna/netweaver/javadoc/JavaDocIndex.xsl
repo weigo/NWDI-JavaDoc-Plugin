@@ -42,20 +42,22 @@
 		<h2>
 			<xsl:value-of select="@name" />
 		</h2>
-		<xsl:apply-templates />
+		<xsl:element name="table">
+			<xsl:apply-templates />
+		</xsl:element>
 	</xsl:template>
 	<xsl:template match="dc">
-		<dt>
-			<xsl:element name="a">
-				<xsl:attribute name="href"><xsl:value-of
-					select="concat(@folder, '/index.html')" /></xsl:attribute>
-				<xsl:value-of select="@vendor" />
-				<xsl:text>:</xsl:text>
-				<xsl:value-of select="@name" />
+		<xsl:element name="tr">
+			<xsl:element name="td">
+				<xsl:element name="a">
+					<xsl:attribute name="href"><xsl:value-of
+						select="concat(@folder, '/index.html')" /></xsl:attribute>
+					<xsl:value-of select="concat(@vendor, '~', @name)" />
+				</xsl:element>
 			</xsl:element>
-		</dt>
-		<dd>
-			<xsl:value-of select="text()" />
-		</dd>
+			<xsl:element name="td">
+				<xsl:value-of select="text()" />
+			</xsl:element>
+		</xsl:element>
 	</xsl:template>
 </xsl:stylesheet>

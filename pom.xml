@@ -1,44 +1,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.arachna.netweaver</groupId>
-    <artifactId>NWDI-pom-Plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.arachna.netweaver</groupId>
+		<artifactId>NWDI-pom-Plugin</artifactId>
+		<version>1.0</version>
+	</parent>
 
-  <groupId>org.arachna.netweaver</groupId>
-  <artifactId>NWDI-JavaDoc-Plugin</artifactId>
-  <name>NWDI-JavaDoc-Plugin</name>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>hpi</packaging>
-  <description>Hudson/Jenkins plugin for generating JavaDoc documentationfor SAP NetWeaver development components.</description>
-  <inceptionYear>2011</inceptionYear>
-  <scm>
-    <connection>scm:git:git://github.com/weigo/NWDI-JavaDoc-Plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:weigo/NWDI-JavaDoc-Plugin.git</developerConnection>
-    <url>https://github.com/weigo/NWDI-JavaDoc-Plugin</url>
-  </scm>
-  <developers>
-    <developer>
-      <id>weigo</id>
-      <name>Dirk Weigenand</name>
-      <email>Dirk.Weigenand@gmx.de</email>
-    </developer>
-  </developers>
+	<groupId>org.arachna.netweaver</groupId>
+	<artifactId>NWDI-JavaDoc-Plugin</artifactId>
+	<name>NWDI-JavaDoc-Plugin</name>
+	<version>1.1-SNAPSHOT</version>
+	<packaging>hpi</packaging>
+	<description>Hudson/Jenkins plugin for generating JavaDoc documentationfor SAP NetWeaver development components.</description>
+	<inceptionYear>2011</inceptionYear>
+	<scm>
+		<connection>scm:git:git://github.com/weigo/NWDI-JavaDoc-Plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:weigo/NWDI-JavaDoc-Plugin.git</developerConnection>
+		<url>https://github.com/weigo/NWDI-JavaDoc-Plugin</url>
+	</scm>
+	<developers>
+		<developer>
+			<id>weigo</id>
+			<name>Dirk Weigenand</name>
+			<email>Dirk.Weigenand@gmx.de</email>
+		</developer>
+	</developers>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.arachna.netweaver</groupId>
-      <artifactId>NWDI-Core-Plugin</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.ant</groupId>
-      <artifactId>ant</artifactId>
-      <version>1.8.2</version>
-      <type>jar</type>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>org.arachna.netweaver</groupId>
+			<artifactId>NWDI-Core-Plugin</artifactId>
+			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity</artifactId>
+			<version>1.6.4</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 </project>

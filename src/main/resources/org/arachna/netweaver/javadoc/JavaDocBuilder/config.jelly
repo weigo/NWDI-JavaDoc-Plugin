@@ -1,7 +1,33 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="Links">
-		<textarea class="setting-input" name="links" rows="8">${instance.links()}
-		</textarea>
+	<f:entry title="${%useUmlGraph}"
+		description="${%Use the UmlGraph doclet to add UML diagrams of your source code to your javadoc documentation.}"
+		field="useUmlGraph">
+		<f:checkbox default="false" value="${instance.useUmlGraph}"
+			clazz="required" />
 	</f:entry>
+
+	<f:optionalBlock name="javadoc.advancedConfiguration"
+		title="${%Advanced javadoc configuration.}" checked="true">
+		<f:entry help="/plugin/NWDI-JavaDoc-Plugin/help-pattern.html"
+			title="${%Links}">
+			<f:repeatable name="links" var="link" items="${instance.links}"
+				noAddButton="true" minimum="1">
+				<table width="100%">
+					<f:entry>
+						<f:textbox name="link" value="${link}" />
+					</f:entry>
+					<f:entry>
+						<div align="right">
+							<input type="button" value="${%Add another javadoc URL to link to...}"
+								class="repeatable-add show-if-last" />
+							<input type="button" value="${%Delete}"
+								class="repeatable-delete
+      show-if-not-only" style="margin-left: 1em;" />
+						</div>
+					</f:entry>
+				</table>
+			</f:repeatable>
+		</f:entry>
+	</f:optionalBlock>
 </j:jelly>
