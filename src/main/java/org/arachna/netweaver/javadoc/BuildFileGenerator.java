@@ -18,9 +18,6 @@ import java.util.HashSet;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.ResourceNotFoundException;
 import org.arachna.ant.AntHelper;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
@@ -55,11 +52,21 @@ final class BuildFileGenerator {
      */
     private final DevelopmentComponentFactory dcFactory;
 
-    private DevelopmentConfiguration developmentConfiguration;
+    /**
+     * Development configuration to use generating the Java version for the
+     * JavaDoc task.
+     */
+    private final DevelopmentConfiguration developmentConfiguration;
 
-    private VelocityEngine engine;
+    /**
+     * The template engine to use for build file generation.
+     */
+    private final VelocityEngine engine;
 
-    private Collection<String> buildFilePaths = new HashSet<String>();
+    /**
+     * Paths to generated build files.
+     */
+    private final Collection<String> buildFilePaths = new HashSet<String>();
 
     /**
      * @return the buildFilePaths
@@ -79,9 +86,11 @@ final class BuildFileGenerator {
      *            class path for a given development component
      * @param links
      *            links to add to existing javadoc documentation
+     * @param engine
+     *            template engine to use for generating build files.
      */
     BuildFileGenerator(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
-        final DevelopmentComponentFactory dcFactory, Collection<String> links, VelocityEngine engine) {
+        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final VelocityEngine engine) {
         this.developmentConfiguration = developmentConfiguration;
         this.antHelper = antHelper;
         this.dcFactory = dcFactory;
@@ -103,9 +112,13 @@ final class BuildFileGenerator {
      *            links to add to existing javadoc documentation
      * @param proxy
      *            the wwwproxy to use for referencing external javadocs.
+     * @param engine
+     *            template engine to use for generating build files.
+     * 
      */
     BuildFileGenerator(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
-        final DevelopmentComponentFactory dcFactory, Collection<String> links, InetSocketAddress proxy, VelocityEngine engine) {
+        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final InetSocketAddress proxy,
+        final VelocityEngine engine) {
         this.developmentConfiguration = developmentConfiguration;
         this.antHelper = antHelper;
         this.dcFactory = dcFactory;
@@ -119,35 +132,31 @@ final class BuildFileGenerator {
      * 
      * @param component
      *            development component to document with JavaDoc.
-     * @throws IOException
-     * @throws ResourceNotFoundException
-     * @throws MethodInvocationException
-     * @throws ParseErrorException
      */
     public void execute(final DevelopmentComponent component) {
         final HashSet<String> excludes = new HashSet<String>();
-        Collection<String> sources = antHelper.createSourceFileSets(component, excludes, excludes);
+        final Collection<String> sources = antHelper.createSourceFileSets(component, excludes, excludes);
 
         if (!sources.isEmpty()) {
-            Context context = new VelocityContext();
+            final Context context = new VelocityContext();
             context.put("sourcePaths", sources);
             context.put("classpaths", antHelper.createClassPath(component));
-            context.put("javaDocDir", this.getJavaDocFolder(component));
+            context.put("javaDocDir", getJavaDocFolder(component));
             context.put("source", getSourceVersion());
             context.put("header", getHeader(component));
-            context.put("links", this.getLinks(component));
+            context.put("links", getLinks(component));
             context.put("proxy", getProxyConfigurationParams());
 
-            String baseLocation = antHelper.getBaseLocation(component);
-            String location = String.format("%s/javadoc-build.xml", baseLocation);
+            final String baseLocation = antHelper.getBaseLocation(component);
+            final String location = String.format("%s/javadoc-build.xml", baseLocation);
             Writer buildFile = null;
 
             try {
                 buildFile = new FileWriter(location);
                 engine.evaluate(context, buildFile, "javadoc-build", getTemplateReader());
-                this.buildFilePaths.add(location);
+                buildFilePaths.add(location);
             }
-            catch (Exception e) {
+            catch (final Exception e) {
                 throw new RuntimeException(e);
             }
             finally {
@@ -155,7 +164,7 @@ final class BuildFileGenerator {
                     try {
                         buildFile.close();
                     }
-                    catch (IOException e) {
+                    catch (final IOException e) {
                         // TODO Auto-generated catch block
                         // e.printStackTrace(logger);
                     }
@@ -177,8 +186,9 @@ final class BuildFileGenerator {
      * @return
      */
     private String getHeader(final DevelopmentComponent component) {
-        return String.format("&lt;div class='compartment'&gt;Compartment %s&lt;br/&gt;Development Component %s:%s&lt;/div&gt;", component
-            .getCompartment().getName(), component.getVendor(), component.getName());
+        return String.format(
+            "&lt;div class='compartment'&gt;Compartment %s&lt;br/&gt;Development Component %s:%s&lt;/div&gt;",
+            component.getCompartment().getName(), component.getVendor(), component.getName());
     }
 
     /**
@@ -191,13 +201,13 @@ final class BuildFileGenerator {
      * @return java source version to use generating javadoc documentation.
      */
     private String getSourceVersion() {
-        JdkHomeAlias alias = this.developmentConfiguration.getJdkHomeAlias();
+        final JdkHomeAlias alias = developmentConfiguration.getJdkHomeAlias();
         String sourceVersion;
         if (alias != null) {
             sourceVersion = alias.getSourceVersion();
         }
         else {
-            String[] versionParts = System.getProperty("java.version").replace('_', '.').split("\\.");
+            final String[] versionParts = System.getProperty("java.version").replace('_', '.').split("\\.");
             sourceVersion = String.format("%s.%s", versionParts[0], versionParts[1]);
         }
 
@@ -215,11 +225,11 @@ final class BuildFileGenerator {
      *            referenced.
      */
     private Collection<String> getLinks(final DevelopmentComponent component) {
-        Collection<String> links = new HashSet<String>();
+        final Collection<String> links = new HashSet<String>();
         links.addAll(this.links);
 
-        for (PublicPartReference referencedDC : component.getUsedDevelopmentComponents()) {
-            DevelopmentComponent usedDC = this.dcFactory.get(referencedDC.getVendor(), referencedDC.getName());
+        for (final PublicPartReference referencedDC : component.getUsedDevelopmentComponents()) {
+            final DevelopmentComponent usedDC = dcFactory.get(referencedDC.getVendor(), referencedDC.getName());
 
             if (usedDC != null && usedDC.getCompartment().isSourceState()) {
                 links.add(getJavaDocFolder(usedDC));
@@ -236,7 +246,7 @@ final class BuildFileGenerator {
      *         proxy access
      */
     private String getProxyConfigurationParams() {
-        StringBuilder proxyConfig = new StringBuilder();
+        final StringBuilder proxyConfig = new StringBuilder();
 
         if (proxy != null) {
             if (proxy.getPort() > 0) {
@@ -260,8 +270,8 @@ final class BuildFileGenerator {
      *            for
      * @return folder to output javadoc to
      */
-    private String getJavaDocFolder(DevelopmentComponent component) {
-        return String.format("%s/javadoc/%s~%s", this.antHelper.getPathToWorkspace(), component.getVendor(),
+    private String getJavaDocFolder(final DevelopmentComponent component) {
+        return String.format("%s/javadoc/%s~%s", antHelper.getPathToWorkspace(), component.getVendor(),
             component.getName().replace('/', '~')).replace('/', File.separatorChar);
     }
 }
