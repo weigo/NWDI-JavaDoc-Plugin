@@ -3,7 +3,7 @@
  */
 package org.arachna.netweaver.javadoc;
 
-import hudson.model.Hudson;
+import hudson.ProxyConfiguration;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,6 +14,7 @@ import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -21,6 +22,7 @@ import org.apache.velocity.context.Context;
 import org.arachna.ant.AntHelper;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
+import org.arachna.netweaver.dc.types.DevelopmentComponentType;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
 import org.arachna.netweaver.dc.types.PublicPartReference;
 import org.arachna.netweaver.dctool.JdkHomeAlias;
@@ -40,7 +42,7 @@ final class BuildFileGenerator {
     /**
      * The HTTP-Proxy to use iff available.
      */
-    private final InetSocketAddress proxy;
+    private final ProxyConfiguration proxy;
 
     /**
      * links to add to existing javadoc documentation
@@ -69,6 +71,14 @@ final class BuildFileGenerator {
     private final Collection<String> buildFilePaths = new HashSet<String>();
 
     /**
+     * Indicate that UmlGraph should be used for generating UML images of class-
+     * and inheritance relations.
+     */
+    private boolean useUmlGraph;
+
+    private Set<DevelopmentComponentType> dcTypes4UmlGraph = new HashSet<DevelopmentComponentType>();
+
+    /**
      * @return the buildFilePaths
      */
     final Collection<String> getBuildFilePaths() {
@@ -90,13 +100,13 @@ final class BuildFileGenerator {
      *            template engine to use for generating build files.
      */
     BuildFileGenerator(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
-        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final VelocityEngine engine) {
-        this.developmentConfiguration = developmentConfiguration;
-        this.antHelper = antHelper;
-        this.dcFactory = dcFactory;
-        this.links = links;
-        this.engine = engine;
-        proxy = (InetSocketAddress)Hudson.getInstance().proxy.createProxy().address();
+        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final VelocityEngine engine,
+        boolean useUmlGraph) {
+        this(developmentConfiguration, antHelper, dcFactory, links, /*
+                                                                     * Hudson.
+                                                                     * getInstance
+                                                                     * ().proxy
+                                                                     */null, engine, useUmlGraph);
     }
 
     /**
@@ -117,14 +127,19 @@ final class BuildFileGenerator {
      * 
      */
     BuildFileGenerator(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
-        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final InetSocketAddress proxy,
-        final VelocityEngine engine) {
+        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final ProxyConfiguration proxy,
+        final VelocityEngine engine, boolean useUmlGraph) {
         this.developmentConfiguration = developmentConfiguration;
         this.antHelper = antHelper;
         this.dcFactory = dcFactory;
         this.links = links;
         this.proxy = proxy;
         this.engine = engine;
+        this.useUmlGraph = useUmlGraph;
+        dcTypes4UmlGraph.add(DevelopmentComponentType.J2EEWebModule);
+        dcTypes4UmlGraph.add(DevelopmentComponentType.Java);
+        dcTypes4UmlGraph.add(DevelopmentComponentType.PortalApplicationStandalone);
+        dcTypes4UmlGraph.add(DevelopmentComponentType.PortalApplicationModule);
     }
 
     /**
@@ -146,6 +161,9 @@ final class BuildFileGenerator {
             context.put("header", getHeader(component));
             context.put("links", getLinks(component));
             context.put("proxy", getProxyConfigurationParams());
+            context.put("useUmlGraph", useUmlGraph(component));
+            context.put("vendor", component.getVendor());
+            context.put("component", component.getName().replaceAll("/", "~"));
 
             final String baseLocation = antHelper.getBaseLocation(component);
             final String location = String.format("%s/javadoc-build.xml", baseLocation);
@@ -171,6 +189,21 @@ final class BuildFileGenerator {
                 }
             }
         }
+    }
+
+    /**
+     * Indicate that UML diagrams should be generated when generating JavaDoc
+     * documentation.
+     * 
+     * Diagrams are generated when the build mandates so (via build
+     * configuration option useUmlGraph) and the given development component is
+     * contained in the set {@see #dcTypes4UmlGraph}.
+     * 
+     * @return <code>true</code> when UML diagrams should be generated for the
+     *         given development component, <code>false</code> otherwise.
+     */
+    private Boolean useUmlGraph(DevelopmentComponent component) {
+        return Boolean.valueOf(this.useUmlGraph) && dcTypes4UmlGraph.contains(component.getType());
     }
 
     /**
@@ -249,12 +282,13 @@ final class BuildFileGenerator {
         final StringBuilder proxyConfig = new StringBuilder();
 
         if (proxy != null) {
-            if (proxy.getPort() > 0) {
-                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s -J-Dhttp.proxyPort=%d", proxy.getHostName(),
-                    proxy.getPort()));
+            InetSocketAddress address = (InetSocketAddress)proxy.createProxy().address();
+            if (address.getPort() > 0) {
+                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s -J-Dhttp.proxyPort=%d", address.getHostName(),
+                    address.getPort()));
             }
             else {
-                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s", proxy.getHostName()));
+                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s", address.getHostName()));
             }
         }
 

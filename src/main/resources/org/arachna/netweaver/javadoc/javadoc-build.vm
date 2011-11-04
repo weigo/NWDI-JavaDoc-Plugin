@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="javadoc" default="javadoc">
+<project name="javadoc" default="javadoc-$vendor~$component">
   <path id="classpath">
 #foreach($path in $classpaths)
     <fileset dir="$path">
@@ -8,9 +8,9 @@
 #end
   </path>
 
-  <target name="javadoc">
+  <target name="javadoc-$vendor~$component">
     <mkdir dir="$javaDocDir" />
-    <javadoc use="true" author="true" version="true" destdir="$javaDocDir" source="$source" additionalparam="$proxy" header="$header" classpathref="classpath">
+    <javadoc author="true" version="true" destdir="$javaDocDir" source="$source" additionalparam="$proxy" classpathref="classpath">
 #foreach ($source in $sourcePaths)
     <packageset dir="$source">
       <include name="**" />
@@ -19,6 +19,27 @@
 #foreach ($link in $links)
       <link href="$link" />
 #end
+#if($useUmlGraph)
+           <doclet name="org.umlgraph.doclet.UmlGraph" path="${umlgraph.dir}/UmlGraph-5.4.jar">
+               <param name="-d" value="$javaDocDir"/>
+               <param name="-attributes" />
+               <param name="-operations" />
+               <param name="-qualify" />
+               <param name="-types" />
+               <param name="-visibility" />
+               <param name="-outputencoding" value="utf8" />
+           </doclet>
+#end
     </javadoc>
+#if($useUmlGraph)
+    <apply executable="dot" dest="$javaDocDir" parallel="false">
+         <arg value="-Tsvg"/>
+         <arg value="-o"/>
+         <targetfile/>
+         <srcfile/>
+         <fileset dir="$javaDocDir" includes="*.dot"/>
+         <mapper type="glob" from="*.dot" to="*.svg"/>
+     </apply>
+#end     
   </target>
 </project>

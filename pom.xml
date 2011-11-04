@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.arachna.netweaver</groupId>
 		<artifactId>NWDI-pom-Plugin</artifactId>
-		<version>1.1-SNAPSHOT</version>
+		<version>1.2-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.arachna.netweaver</groupId>
@@ -41,9 +41,9 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>ant</artifactId>
-			<version>1.1</version>
+			<groupId>org.umlgraph</groupId>
+			<artifactId>UmlGraph</artifactId>
+			<version>5.4</version>
 		</dependency>
 	</dependencies>
 </project>
