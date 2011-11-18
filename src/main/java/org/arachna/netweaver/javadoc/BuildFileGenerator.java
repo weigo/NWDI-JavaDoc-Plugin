@@ -150,7 +150,11 @@ final class BuildFileGenerator {
      */
     public void execute(final DevelopmentComponent component) {
         final HashSet<String> excludes = new HashSet<String>();
-        final Collection<String> sources = antHelper.createSourceFileSets(component, excludes, excludes);
+        final Set<String> sources = new HashSet<String>();
+
+        for (String folder : antHelper.createSourceFileSets(component, excludes, excludes)) {
+            sources.add(folder);
+        }
 
         if (!sources.isEmpty()) {
             final Context context = new VelocityContext();
@@ -189,6 +193,10 @@ final class BuildFileGenerator {
                 }
             }
         }
+    }
+
+    protected String normalize(String s) {
+        return s.replace(File.separatorChar, '/');
     }
 
     /**

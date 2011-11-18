@@ -10,7 +10,10 @@
 
   <target name="javadoc-$vendor~$component">
     <mkdir dir="$javaDocDir" />
-    <javadoc author="true" version="true" destdir="$javaDocDir" source="$source" additionalparam="$proxy" classpathref="classpath">
+    <javadoc author="true" version="true" destdir="$javaDocDir" source="$source"
+             additionalparam="$proxy" classpathref="classpath"
+             encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
+             header="$header">
 #foreach ($source in $sourcePaths)
     <packageset dir="$source">
       <include name="**" />
@@ -20,7 +23,7 @@
       <link href="$link" />
 #end
 #if($useUmlGraph)
-           <doclet name="org.umlgraph.doclet.UmlGraph" path="${umlgraph.dir}/UmlGraph-5.4.jar">
+           <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${umlgraph.dir}/UmlGraph-5.4.jar">
                <param name="-d" value="$javaDocDir"/>
                <param name="-attributes" />
                <param name="-operations" />
