@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="javadoc" default="javadoc-$vendor~$component">
-  <path id="classpath">
+  <path id="classpath-$vendor~$component">
 #foreach($path in $classpaths)
     <fileset dir="$path">
       <include name="**/*.jar" />
@@ -11,7 +11,7 @@
   <target name="javadoc-$vendor~$component">
     <mkdir dir="$javaDocDir" />
     <javadoc author="true" version="true" destdir="$javaDocDir" source="$source"
-             additionalparam="$proxy" classpathref="classpath"
+             additionalparam="$proxy" classpathref="classpath-$vendor~$component"
              encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
              header="$header">
 #foreach ($source in $sourcePaths)
