@@ -28,7 +28,7 @@ import org.arachna.netweaver.dc.types.PublicPartReference;
 import org.arachna.netweaver.dctool.JdkHomeAlias;
 
 /**
- * Wrapper for the Ant JavaDoc task. Sets up the task and executes it.
+ * An ant build file generator for the JavaDoc task.
  * 
  * @author Dirk Weigenand
  */

@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Unittests for {@link BuildFileGenerator}.
  * 
- * @author g526521 (Dirk Weigenand)
+ * @author Dirk Weigenand
  */
 public class BuildFileGeneratorTest {
     private BuildFileGenerator generator;
