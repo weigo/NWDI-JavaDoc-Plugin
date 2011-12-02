@@ -32,11 +32,13 @@
 			<groupId>org.arachna.netweaver</groupId>
 			<artifactId>NWDI-Core-Plugin</artifactId>
 			<version>1.1-SNAPSHOT</version>
+			<type>hpi</type>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
-			<version>1.6.4</version>
+			<groupId>org.arachna.netweaver</groupId>
+			<artifactId>NWDI-Core-Plugin</artifactId>
+			<version>1.1-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
