@@ -31,6 +31,17 @@
 				<h1>
 					<xsl:value-of select="$title" />
 				</h1>
+				<ul>
+					<xsl:for-each select="compartments/compartment">
+						<xsl:element name="li">
+							<xsl:element name="a">
+								<xsl:attribute name="href"><xsl:value-of
+									select="concat('#', @name)" /></xsl:attribute>
+								<xsl:value-of select="@name" />
+							</xsl:element>
+						</xsl:element>
+					</xsl:for-each>
+				</ul>
 				<dl>
 					<xsl:apply-templates />
 				</dl>
@@ -42,6 +53,9 @@
 		<h2>
 			<xsl:value-of select="@name" />
 		</h2>
+		<xsl:element name="a">
+			<xsl:attribute name="name"><xsl:value-of select="@name" /></xsl:attribute>
+		</xsl:element>
 		<xsl:element name="table">
 			<xsl:apply-templates />
 		</xsl:element>
