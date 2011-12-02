@@ -10,10 +10,8 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.tasks.Ant;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashSet;
@@ -120,24 +118,14 @@ public class JavaDocBuilder extends AntTaskBuilder {
             executor.execute(component);
         }
 
-        try {
-            OverviewGenerator overview =
-                new OverviewGenerator(new File(getAntHelper().getPathToWorkspace()),
-                    nwdiBuild.getDevelopmentConfiguration());
-            overview.execute();
-            createBuildFile(nwdiBuild.getWorkspace(), this.getVelocityEngine(listener.getLogger()),
-                executor.getBuildFilePaths());
-            Ant ant = new Ant("javadoc-all", null, null, JAVADOC_BUILD_ALL_XML, getAntProperties());
-            ant.perform(build, launcher, listener);
-        }
-        catch (IOException e) {
-            e.printStackTrace(listener.getLogger());
-        }
-        catch (InterruptedException e) {
-            // ignore
-        }
+        OverviewGenerator overview =
+            new OverviewGenerator(new File(getAntHelper().getPathToWorkspace()),
+                nwdiBuild.getDevelopmentConfiguration());
+        overview.execute();
+        createBuildFile(nwdiBuild.getWorkspace(), this.getVelocityEngine(listener.getLogger()),
+            executor.getBuildFilePaths());
 
-        return true;
+        return this.execute(nwdiBuild, launcher, listener, "javadoc-all", JAVADOC_BUILD_ALL_XML, null);
     }
 
     /**
