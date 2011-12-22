@@ -22,7 +22,6 @@ import org.apache.velocity.context.Context;
 import org.arachna.ant.AntHelper;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
-import org.arachna.netweaver.dc.types.DevelopmentComponentType;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
 import org.arachna.netweaver.dc.types.PublicPartReference;
 import org.arachna.netweaver.dctool.JdkHomeAlias;
@@ -75,8 +74,6 @@ final class BuildFileGenerator {
      * and inheritance relations.
      */
     private boolean useUmlGraph;
-
-    private Set<DevelopmentComponentType> dcTypes4UmlGraph = new HashSet<DevelopmentComponentType>();
 
     /**
      * @return the buildFilePaths
@@ -136,10 +133,6 @@ final class BuildFileGenerator {
         this.proxy = proxy;
         this.engine = engine;
         this.useUmlGraph = useUmlGraph;
-        dcTypes4UmlGraph.add(DevelopmentComponentType.J2EEWebModule);
-        dcTypes4UmlGraph.add(DevelopmentComponentType.Java);
-        dcTypes4UmlGraph.add(DevelopmentComponentType.PortalApplicationStandalone);
-        dcTypes4UmlGraph.add(DevelopmentComponentType.PortalApplicationModule);
     }
 
     /**
@@ -149,33 +142,21 @@ final class BuildFileGenerator {
      *            development component to document with JavaDoc.
      */
     public void execute(final DevelopmentComponent component) {
-        final HashSet<String> excludes = new HashSet<String>();
         final Set<String> sources = new HashSet<String>();
 
-        for (String folder : antHelper.createSourceFileSets(component, excludes, excludes)) {
+        for (String folder : antHelper.createSourceFileSets(component)) {
             sources.add(folder);
         }
 
         if (!sources.isEmpty()) {
-            final Context context = new VelocityContext();
-            context.put("sourcePaths", sources);
-            context.put("classpaths", antHelper.createClassPath(component));
-            context.put("javaDocDir", getJavaDocFolder(component));
-            context.put("source", getSourceVersion());
-            context.put("header", getHeader(component));
-            context.put("links", getLinks(component));
-            context.put("proxy", getProxyConfigurationParams());
-            context.put("useUmlGraph", useUmlGraph(component));
-            context.put("vendor", component.getVendor());
-            context.put("component", component.getName().replaceAll("/", "~"));
+            final Context context = createContext(component, sources);
 
-            final String baseLocation = antHelper.getBaseLocation(component);
-            final String location = String.format("%s/javadoc-build.xml", baseLocation);
             Writer buildFile = null;
 
             try {
+                final String location = createBuildXmlLocation(component);
                 buildFile = new FileWriter(location);
-                engine.evaluate(context, buildFile, "javadoc-build", getTemplateReader());
+                evaluateContext(context, buildFile);
                 buildFilePaths.add(location);
             }
             catch (final Exception e) {
@@ -187,12 +168,52 @@ final class BuildFileGenerator {
                         buildFile.close();
                     }
                     catch (final IOException e) {
-                        // TODO Auto-generated catch block
-                        // e.printStackTrace(logger);
+                        throw new RuntimeException(e);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * @param component
+     * @return
+     */
+    private String createBuildXmlLocation(final DevelopmentComponent component) {
+        final String baseLocation = antHelper.getBaseLocation(component);
+        final String location = String.format("%s/javadoc-build.xml", baseLocation);
+        return location;
+    }
+
+    /**
+     * @param context
+     * @param buildFile
+     * @throws IOException
+     */
+    private void evaluateContext(final Context context, Writer buildFile) throws IOException {
+        engine.evaluate(context, buildFile, "javadoc-build", getTemplateReader());
+    }
+
+    /**
+     * @param component
+     * @param sources
+     * @return
+     */
+    private Context createContext(final DevelopmentComponent component, final Set<String> sources) {
+        final Context context = new VelocityContext();
+        context.put("sourcePaths", sources);
+        context.put("classes", component.getOutputFolder());
+        context.put("classpaths", antHelper.createClassPath(component));
+        context.put("javaDocDir", getJavaDocFolder(component));
+        context.put("source", getSourceVersion());
+        context.put("header", getHeader(component));
+        context.put("links", getLinks(component));
+        context.put("proxy", getProxyConfigurationParams());
+        context.put("useUmlGraph", useUmlGraph(component));
+        context.put("vendor", component.getVendor());
+        context.put("component", component.getName().replaceAll("/", "~"));
+
+        return context;
     }
 
     protected String normalize(String s) {
@@ -204,14 +225,14 @@ final class BuildFileGenerator {
      * documentation.
      * 
      * Diagrams are generated when the build mandates so (via build
-     * configuration option useUmlGraph) and the given development component is
-     * contained in the set {@see #dcTypes4UmlGraph}.
+     * configuration option useUmlGraph) and the given development component 
+     * contains Java sources (determined via the component type).
      * 
      * @return <code>true</code> when UML diagrams should be generated for the
      *         given development component, <code>false</code> otherwise.
      */
     private Boolean useUmlGraph(DevelopmentComponent component) {
-        return Boolean.valueOf(this.useUmlGraph) && dcTypes4UmlGraph.contains(component.getType());
+        return Boolean.valueOf(this.useUmlGraph) && component.getType().canContainJavaSources();
     }
 
     /**

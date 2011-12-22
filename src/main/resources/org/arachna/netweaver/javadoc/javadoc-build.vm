@@ -11,7 +11,7 @@
   <target name="javadoc-$vendor~$component">
     <mkdir dir="$javaDocDir" />
     <javadoc author="true" version="true" destdir="$javaDocDir" source="$source"
-             additionalparam="$proxy" classpathref="classpath-$vendor~$component"
+             additionalparam="$proxy" classpath="$classes" classpathref="classpath-$vendor~$component"
              encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
              header="$header">
 #foreach ($source in $sourcePaths)
