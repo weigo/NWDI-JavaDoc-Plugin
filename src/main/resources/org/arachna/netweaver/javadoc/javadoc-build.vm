@@ -15,34 +15,38 @@
              encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
              header="$header">
 #foreach ($source in $sourcePaths)
-    <packageset dir="$source">
-      <include name="**" />
-    </packageset>
+      <packageset dir="$source">
+        <include name="**" />
+      </packageset>
+      <fileset dir="$source">
+        <include name="*.java" />
+        <include name="package.html" />
+      </fileset>
 #end
 #foreach ($link in $links)
       <link href="$link" />
 #end
 #if($useUmlGraph)
-           <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${umlgraph.dir}/UmlGraph-5.4.jar">
-               <param name="-d" value="$javaDocDir"/>
-               <param name="-attributes" />
-               <param name="-operations" />
-               <param name="-qualify" />
-               <param name="-types" />
-               <param name="-visibility" />
-               <param name="-outputencoding" value="utf8" />
-           </doclet>
+      <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${umlgraph.dir}/UmlGraph-5.4.jar">
+        <param name="-d" value="$javaDocDir"/>
+        <param name="-attributes" />
+        <param name="-operations" />
+        <param name="-qualify" />
+        <param name="-types" />
+        <param name="-visibility" />
+        <param name="-outputencoding" value="utf8" />
+      </doclet>
 #end
     </javadoc>
 #if($useUmlGraph)
     <apply executable="dot" dest="$javaDocDir" parallel="false">
-         <arg value="-Tsvg"/>
-         <arg value="-o"/>
-         <targetfile/>
-         <srcfile/>
-         <fileset dir="$javaDocDir" includes="*.dot"/>
-         <mapper type="glob" from="*.dot" to="*.svg"/>
-     </apply>
+      <arg value="-Tsvg"/>
+      <arg value="-o"/>
+      <targetfile/>
+      <srcfile/>
+      <fileset dir="$javaDocDir" includes="*.dot"/>
+      <mapper type="glob" from="*.dot" to="*.svg"/>
+    </apply>
 #end     
   </target>
 </project>
