@@ -3,6 +3,8 @@
  */
 package org.arachna.netweaver.javadoc;
 
+import static org.junit.Assert.fail;
+
 import java.util.HashSet;
 
 import org.apache.velocity.app.VelocityEngine;
@@ -13,15 +15,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-
 /**
  * Unittests for {@link BuildFileGenerator}.
  * 
  * @author Dirk Weigenand
  */
 public class BuildFileGeneratorTest {
+    /**
+     * Instance under test.
+     */
     private BuildFileGenerator generator;
 
     /**
@@ -29,10 +31,10 @@ public class BuildFileGeneratorTest {
      */
     @Before
     public void setUp() throws Exception {
-        DevelopmentConfiguration developmentConfiguration = new DevelopmentConfiguration("DI1");
-        DevelopmentComponentFactory dcFactory = new DevelopmentComponentFactory();
-        AntHelper antHelper = new AntHelper("", dcFactory);
-        this.generator =
+        final DevelopmentConfiguration developmentConfiguration = new DevelopmentConfiguration("DI1");
+        final DevelopmentComponentFactory dcFactory = new DevelopmentComponentFactory();
+        final AntHelper antHelper = new AntHelper("", dcFactory);
+        generator =
             new BuildFileGenerator(developmentConfiguration, antHelper, dcFactory, new HashSet<String>(),
                 new VelocityEngine(), false);
     }
@@ -46,6 +48,6 @@ public class BuildFileGeneratorTest {
 
     @Test
     public final void test() {
-        assertThat(this.generator.normalize("c:\\temp"), equalTo("c:/temp"));
+        fail("Not implemented yet!");
     }
 }
