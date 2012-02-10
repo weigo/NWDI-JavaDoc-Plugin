@@ -24,7 +24,6 @@ import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
 import org.arachna.netweaver.dc.types.PublicPartReference;
-import org.arachna.netweaver.dctool.JdkHomeAlias;
 
 /**
  * An ant build file generator for the JavaDoc task.
@@ -205,7 +204,7 @@ final class BuildFileGenerator {
         context.put("classes", component.getOutputFolder());
         context.put("classpaths", antHelper.createClassPath(component));
         context.put("javaDocDir", getJavaDocFolder(component));
-        context.put("source", getSourceVersion());
+        context.put("source", component.getCompartment().getDevelopmentConfiguration().getSourceVersion());
         context.put("header", getHeader(component));
         context.put("links", getLinks(component));
         context.put("proxy", getProxyConfigurationParams());
@@ -251,29 +250,6 @@ final class BuildFileGenerator {
         return String.format(
             "&lt;div class='compartment'&gt;Compartment %s&lt;br/&gt;Development Component %s:%s&lt;/div&gt;",
             component.getCompartment().getName(), component.getVendor(), component.getName());
-    }
-
-    /**
-     * Returns the source version to use for generating javadoc documentation.
-     * 
-     * Uses the {@link JdkHomeAlias} defined in the development configuration.
-     * If there is no alias defined use the JDK version the ant task is run
-     * with.
-     * 
-     * @return java source version to use generating javadoc documentation.
-     */
-    private String getSourceVersion() {
-        final JdkHomeAlias alias = developmentConfiguration.getJdkHomeAlias();
-        String sourceVersion;
-        if (alias != null) {
-            sourceVersion = alias.getSourceVersion();
-        }
-        else {
-            final String[] versionParts = System.getProperty("java.version").replace('_', '.').split("\\.");
-            sourceVersion = String.format("%s.%s", versionParts[0], versionParts[1]);
-        }
-
-        return sourceVersion;
     }
 
     /**
