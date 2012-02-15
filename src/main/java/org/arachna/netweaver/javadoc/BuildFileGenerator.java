@@ -22,7 +22,6 @@ import org.apache.velocity.context.Context;
 import org.arachna.ant.AntHelper;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
-import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
 import org.arachna.netweaver.dc.types.PublicPartReference;
 
 /**
@@ -53,12 +52,6 @@ final class BuildFileGenerator {
     private final DevelopmentComponentFactory dcFactory;
 
     /**
-     * Development configuration to use generating the Java version for the
-     * JavaDoc task.
-     */
-    private final DevelopmentConfiguration developmentConfiguration;
-
-    /**
      * The template engine to use for build file generation.
      */
     private final VelocityEngine engine;
@@ -85,8 +78,6 @@ final class BuildFileGenerator {
      * Create an executor for executing the Javadoc ant task using the given ant
      * helper object and links to related javadoc documentation.
      * 
-     * @param developmentConfiguration
-     * 
      * @param antHelper
      *            helper for populating an ant task with source filesets and
      *            class path for a given development component
@@ -95,21 +86,16 @@ final class BuildFileGenerator {
      * @param engine
      *            template engine to use for generating build files.
      */
-    BuildFileGenerator(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
-        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final VelocityEngine engine,
-        boolean useUmlGraph) {
-        this(developmentConfiguration, antHelper, dcFactory, links, /*
-                                                                     * Hudson.
-                                                                     * getInstance
-                                                                     * ().proxy
-                                                                     */null, engine, useUmlGraph);
+    BuildFileGenerator(final AntHelper antHelper, final DevelopmentComponentFactory dcFactory,
+        final Collection<String> links, final VelocityEngine engine, boolean useUmlGraph) {
+        this(antHelper, dcFactory, links, /*
+                                           * Hudson. getInstance ().proxy
+                                           */null, engine, useUmlGraph);
     }
 
     /**
      * Create an executor for executing the Javadoc ant task using the given ant
      * helper object and links to related javadoc documentation.
-     * 
-     * @param developmentConfiguration
      * 
      * @param antHelper
      *            helper for populating an ant task with source filesets and
@@ -122,10 +108,8 @@ final class BuildFileGenerator {
      *            template engine to use for generating build files.
      * 
      */
-    BuildFileGenerator(final DevelopmentConfiguration developmentConfiguration, final AntHelper antHelper,
-        final DevelopmentComponentFactory dcFactory, final Collection<String> links, final ProxyConfiguration proxy,
-        final VelocityEngine engine, boolean useUmlGraph) {
-        this.developmentConfiguration = developmentConfiguration;
+    BuildFileGenerator(final AntHelper antHelper, final DevelopmentComponentFactory dcFactory,
+        final Collection<String> links, final ProxyConfiguration proxy, final VelocityEngine engine, boolean useUmlGraph) {
         this.antHelper = antHelper;
         this.dcFactory = dcFactory;
         this.links = links;
@@ -224,7 +208,7 @@ final class BuildFileGenerator {
      * documentation.
      * 
      * Diagrams are generated when the build mandates so (via build
-     * configuration option useUmlGraph) and the given development component 
+     * configuration option useUmlGraph) and the given development component
      * contains Java sources (determined via the component type).
      * 
      * @return <code>true</code> when UML diagrams should be generated for the

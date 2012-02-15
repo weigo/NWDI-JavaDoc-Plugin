@@ -109,9 +109,8 @@ public class JavaDocBuilder extends AntTaskBuilder {
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) {
         final NWDIBuild nwdiBuild = (NWDIBuild)build;
         final BuildFileGenerator executor =
-            new BuildFileGenerator(nwdiBuild.getDevelopmentConfiguration(), getAntHelper(),
-                nwdiBuild.getDevelopmentComponentFactory(), this.links, this.getVelocityEngine(listener.getLogger()),
-                this.useUmlGraph);
+            new BuildFileGenerator(getAntHelper(), nwdiBuild.getDevelopmentComponentFactory(), this.links,
+                this.getVelocityEngine(listener.getLogger()), this.useUmlGraph);
 
         for (final DevelopmentComponent component : nwdiBuild
             .getAffectedDevelopmentComponents(new DCWithJavaSourceAcceptingFilter())) {
