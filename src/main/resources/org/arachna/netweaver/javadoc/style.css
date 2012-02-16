@@ -13,3 +13,7 @@ H1 {
 H2 {
 	FONT-SIZE: 10pt;
 }
+
+tr {
+	width: 400px;
+}

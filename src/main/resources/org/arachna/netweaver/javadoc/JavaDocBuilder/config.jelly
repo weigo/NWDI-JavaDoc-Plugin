@@ -1,16 +1,16 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<f:entry title="${%useUmlGraph}"
-		description="${%Use the UmlGraph doclet to add UML diagrams of your source code to your javadoc documentation.}"
+	<f:entry title="${%useUmlGraph.title}"
+		description="${%useUmlGraph.description}"
 		field="useUmlGraph">
 		<f:checkbox default="false" value="${instance.useUmlGraph}"
 			clazz="required" />
 	</f:entry>
 
 	<f:optionalBlock name="javadoc.advancedConfiguration"
-		title="${%Advanced javadoc configuration.}" checked="true">
+		title="${%advanced.configuration.title}" checked="false">
 		<f:entry help="/plugin/NWDI-JavaDoc-Plugin/help-pattern.html"
-			title="${%Links}">
+			title="${%advanced.configuration.links}">
 			<f:repeatable name="links" var="link" items="${instance.links}"
 				noAddButton="true" minimum="1">
 				<table width="100%">
@@ -19,7 +19,7 @@
 					</f:entry>
 					<f:entry>
 						<div align="right">
-							<input type="button" value="${%Add another javadoc URL to link to...}"
+							<input type="button" value="${%advanced.configuration.add.new.link.button}"
 								class="repeatable-add show-if-last" />
 							<input type="button" value="${%Delete}"
 								class="repeatable-delete
