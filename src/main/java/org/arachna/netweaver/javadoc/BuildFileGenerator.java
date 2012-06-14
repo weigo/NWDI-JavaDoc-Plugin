@@ -22,6 +22,7 @@ import org.apache.velocity.context.Context;
 import org.arachna.ant.AntHelper;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
 import org.arachna.netweaver.dc.types.DevelopmentComponentFactory;
+import org.arachna.netweaver.dc.types.DevelopmentComponentType;
 import org.arachna.netweaver.dc.types.PublicPartReference;
 
 /**
@@ -31,8 +32,7 @@ import org.arachna.netweaver.dc.types.PublicPartReference;
  */
 final class BuildFileGenerator {
     /**
-     * Helper class for setting up an ant task with class path, source file sets
-     * etc.
+     * Helper class for setting up an ant task with class path, source file sets etc.
      */
     private final AntHelper antHelper;
 
@@ -62,10 +62,9 @@ final class BuildFileGenerator {
     private final Collection<String> buildFilePaths = new HashSet<String>();
 
     /**
-     * Indicate that UmlGraph should be used for generating UML images of class-
-     * and inheritance relations.
+     * Indicate that UmlGraph should be used for generating UML images of class- and inheritance relations.
      */
-    private boolean useUmlGraph;
+    private final boolean useUmlGraph;
 
     /**
      * @return the buildFilePaths
@@ -75,12 +74,10 @@ final class BuildFileGenerator {
     }
 
     /**
-     * Create an executor for executing the Javadoc ant task using the given ant
-     * helper object and links to related javadoc documentation.
+     * Create an executor for executing the Javadoc ant task using the given ant helper object and links to related javadoc documentation.
      * 
      * @param antHelper
-     *            helper for populating an ant task with source filesets and
-     *            class path for a given development component
+     *            helper for populating an ant task with source filesets and class path for a given development component
      * @param links
      *            links to add to existing javadoc documentation
      * @param engine
@@ -94,12 +91,10 @@ final class BuildFileGenerator {
     }
 
     /**
-     * Create an executor for executing the Javadoc ant task using the given ant
-     * helper object and links to related javadoc documentation.
+     * Create an executor for executing the Javadoc ant task using the given ant helper object and links to related javadoc documentation.
      * 
      * @param antHelper
-     *            helper for populating an ant task with source filesets and
-     *            class path for a given development component
+     *            helper for populating an ant task with source filesets and class path for a given development component
      * @param links
      *            links to add to existing javadoc documentation
      * @param proxy
@@ -204,18 +199,16 @@ final class BuildFileGenerator {
     }
 
     /**
-     * Indicate that UML diagrams should be generated when generating JavaDoc
-     * documentation.
+     * Indicate that UML diagrams should be generated when generating JavaDoc documentation.
      * 
-     * Diagrams are generated when the build mandates so (via build
-     * configuration option useUmlGraph) and the given development component
+     * Diagrams are generated when the build mandates so (via build configuration option useUmlGraph) and the given development component
      * contains Java sources (determined via the component type).
      * 
-     * @return <code>true</code> when UML diagrams should be generated for the
-     *         given development component, <code>false</code> otherwise.
+     * @return <code>true</code> when UML diagrams should be generated for the given development component, <code>false</code> otherwise.
      */
     private Boolean useUmlGraph(DevelopmentComponent component) {
-        return Boolean.valueOf(this.useUmlGraph) && component.getType().canContainJavaSources();
+        return Boolean.valueOf(this.useUmlGraph) && !DevelopmentComponentType.WebDynpro.equals(component.getType())
+            && component.getType().canContainJavaSources();
     }
 
     /**
@@ -237,14 +230,12 @@ final class BuildFileGenerator {
     }
 
     /**
-     * Set links to external javadocs. Dependencies will be determined from the
-     * given DC and the links configured in the respective project.
+     * Set links to external javadocs. Dependencies will be determined from the given DC and the links configured in the respective project.
      * 
      * @param task
      *            JavaDoc task to configure
      * @param component
-     *            DC to use to determine which other projects (DCs) should be
-     *            referenced.
+     *            DC to use to determine which other projects (DCs) should be referenced.
      */
     private Collection<String> getLinks(final DevelopmentComponent component) {
         final Collection<String> links = new HashSet<String>();
@@ -264,8 +255,7 @@ final class BuildFileGenerator {
     /**
      * Create proxy configuration parameters for the javadoc tool.
      * 
-     * @return a string suited for javadocs additional params to configure http
-     *         proxy access
+     * @return a string suited for javadocs additional params to configure http proxy access
      */
     private String getProxyConfigurationParams() {
         final StringBuilder proxyConfig = new StringBuilder();
@@ -285,12 +275,10 @@ final class BuildFileGenerator {
     }
 
     /**
-     * Calculate the folder to output javadoc to for the given development
-     * component.
+     * Calculate the folder to output javadoc to for the given development component.
      * 
      * @param component
-     *            development component to calculate the javadoc output folder
-     *            for
+     *            development component to calculate the javadoc output folder for
      * @return folder to output javadoc to
      */
     private String getJavaDocFolder(final DevelopmentComponent component) {
