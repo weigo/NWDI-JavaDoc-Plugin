@@ -27,7 +27,7 @@
       <link href="$link" />
 #end
 #if($useUmlGraph)
-      <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${umlgraph.dir}/UmlGraph-5.4.jar">
+      <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${umlgraph.dir}/umlgraph-5.6.jar">
         <param name="-d" value="$javaDocDir"/>
         <param name="-attributes" />
         <param name="-operations" />
