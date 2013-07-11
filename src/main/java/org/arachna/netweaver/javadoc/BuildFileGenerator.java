@@ -42,7 +42,7 @@ final class BuildFileGenerator {
     private final ProxyConfiguration proxy;
 
     /**
-     * links to add to existing javadoc documentation
+     * links to add to existing javadoc documentation.
      */
     private final Collection<String> links;
 
@@ -67,13 +67,6 @@ final class BuildFileGenerator {
     private final boolean useUmlGraph;
 
     /**
-     * @return the buildFilePaths
-     */
-    final Collection<String> getBuildFilePaths() {
-        return buildFilePaths;
-    }
-
-    /**
      * Create an executor for executing the Javadoc ant task using the given ant helper object and links to related javadoc documentation.
      * 
      * @param antHelper
@@ -83,8 +76,8 @@ final class BuildFileGenerator {
      * @param engine
      *            template engine to use for generating build files.
      */
-    BuildFileGenerator(final AntHelper antHelper, final DevelopmentComponentFactory dcFactory,
-        final Collection<String> links, final VelocityEngine engine, boolean useUmlGraph) {
+    BuildFileGenerator(final AntHelper antHelper, final DevelopmentComponentFactory dcFactory, final Collection<String> links,
+        final VelocityEngine engine, final boolean useUmlGraph) {
         this(antHelper, dcFactory, links, /*
                                            * Hudson. getInstance ().proxy
                                            */null, engine, useUmlGraph);
@@ -95,22 +88,34 @@ final class BuildFileGenerator {
      * 
      * @param antHelper
      *            helper for populating an ant task with source filesets and class path for a given development component
+     * @param dcFactory
+     *            registry for development components.
      * @param links
      *            links to add to existing javadoc documentation
      * @param proxy
      *            the wwwproxy to use for referencing external javadocs.
      * @param engine
      *            template engine to use for generating build files.
+     * @param useUmlGraph
+     *            indicate whether to run UmlGraph and include generated images (<code>true</code>: yes, run UmlGraph. <code>false</code>
+     *            don't care about it).
      * 
      */
-    BuildFileGenerator(final AntHelper antHelper, final DevelopmentComponentFactory dcFactory,
-        final Collection<String> links, final ProxyConfiguration proxy, final VelocityEngine engine, boolean useUmlGraph) {
+    BuildFileGenerator(final AntHelper antHelper, final DevelopmentComponentFactory dcFactory, final Collection<String> links,
+        final ProxyConfiguration proxy, final VelocityEngine engine, final boolean useUmlGraph) {
         this.antHelper = antHelper;
         this.dcFactory = dcFactory;
         this.links = links;
         this.proxy = proxy;
         this.engine = engine;
         this.useUmlGraph = useUmlGraph;
+    }
+
+    /**
+     * @return the buildFilePaths
+     */
+    final Collection<String> getBuildFilePaths() {
+        return buildFilePaths;
     }
 
     /**
@@ -122,7 +127,7 @@ final class BuildFileGenerator {
     public void execute(final DevelopmentComponent component) {
         final Set<String> sources = new HashSet<String>();
 
-        for (String folder : antHelper.createSourceFileSets(component)) {
+        for (final String folder : antHelper.createSourceFileSets(component)) {
             sources.add(folder);
         }
 
@@ -137,8 +142,8 @@ final class BuildFileGenerator {
                 evaluateContext(context, buildFile);
                 buildFilePaths.add(location);
             }
-            catch (final Exception e) {
-                throw new RuntimeException(e);
+            catch (final IOException e) {
+                throw new IllegalStateException(e);
             }
             finally {
                 if (buildFile != null) {
@@ -168,7 +173,7 @@ final class BuildFileGenerator {
      * @param buildFile
      * @throws IOException
      */
-    private void evaluateContext(final Context context, Writer buildFile) throws IOException {
+    private void evaluateContext(final Context context, final Writer buildFile) throws IOException {
         engine.evaluate(context, buildFile, "javadoc-build", getTemplateReader());
     }
 
@@ -189,13 +194,9 @@ final class BuildFileGenerator {
         context.put("proxy", getProxyConfigurationParams());
         context.put("useUmlGraph", useUmlGraph(component));
         context.put("vendor", component.getVendor());
-        context.put("component", component.getName().replaceAll("/", "~"));
+        context.put("component", component.getNormalizedName("~"));
 
         return context;
-    }
-
-    protected String normalize(String s) {
-        return s.replace(File.separatorChar, '/');
     }
 
     /**
@@ -206,8 +207,8 @@ final class BuildFileGenerator {
      * 
      * @return <code>true</code> when UML diagrams should be generated for the given development component, <code>false</code> otherwise.
      */
-    private Boolean useUmlGraph(DevelopmentComponent component) {
-        return Boolean.valueOf(this.useUmlGraph) && !DevelopmentComponentType.WebDynpro.equals(component.getType())
+    private Boolean useUmlGraph(final DevelopmentComponent component) {
+        return Boolean.valueOf(useUmlGraph) && !DevelopmentComponentType.WebDynpro.equals(component.getType())
             && component.getType().canContainJavaSources();
     }
 
@@ -215,8 +216,7 @@ final class BuildFileGenerator {
      * @return
      */
     private Reader getTemplateReader() {
-        return new InputStreamReader(this.getClass().getResourceAsStream(
-            "/org/arachna/netweaver/javadoc/javadoc-build.vm"));
+        return new InputStreamReader(this.getClass().getResourceAsStream("/org/arachna/netweaver/javadoc/javadoc-build.vm"));
     }
 
     /**
@@ -224,16 +224,13 @@ final class BuildFileGenerator {
      * @return
      */
     private String getHeader(final DevelopmentComponent component) {
-        return String.format(
-            "&lt;div class='compartment'&gt;Compartment %s&lt;br/&gt;Development Component %s:%s&lt;/div&gt;",
-            component.getCompartment().getName(), component.getVendor(), component.getName());
+        return String.format("&lt;div class='compartment'&gt;Compartment %s&lt;br/&gt;Development Component %s:%s&lt;/div&gt;", component
+            .getCompartment().getName(), component.getVendor(), component.getName());
     }
 
     /**
      * Set links to external javadocs. Dependencies will be determined from the given DC and the links configured in the respective project.
      * 
-     * @param task
-     *            JavaDoc task to configure
      * @param component
      *            DC to use to determine which other projects (DCs) should be referenced.
      */
@@ -261,10 +258,9 @@ final class BuildFileGenerator {
         final StringBuilder proxyConfig = new StringBuilder();
 
         if (proxy != null) {
-            InetSocketAddress address = (InetSocketAddress)proxy.createProxy().address();
+            final InetSocketAddress address = (InetSocketAddress)proxy.createProxy().address();
             if (address.getPort() > 0) {
-                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s -J-Dhttp.proxyPort=%d", address.getHostName(),
-                    address.getPort()));
+                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s -J-Dhttp.proxyPort=%d", address.getHostName(), address.getPort()));
             }
             else {
                 proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s", address.getHostName()));
@@ -282,7 +278,7 @@ final class BuildFileGenerator {
      * @return folder to output javadoc to
      */
     private String getJavaDocFolder(final DevelopmentComponent component) {
-        return String.format("%s/javadoc/%s~%s", antHelper.getPathToWorkspace(), component.getVendor(),
-            component.getName().replace('/', '~')).replace('/', File.separatorChar);
+        return String.format("%s/javadoc/%s~%s", antHelper.getPathToWorkspace(), component.getVendor(), component.getNormalizedName("~"))
+            .replace('/', File.separatorChar);
     }
 }

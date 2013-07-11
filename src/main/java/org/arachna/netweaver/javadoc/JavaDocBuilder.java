@@ -12,6 +12,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,8 +32,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * {@link Builder} for JavaDoc documentation for SAP NetWeaver development
- * components.
+ * {@link Builder} for JavaDoc documentation for SAP NetWeaver development components.
  * 
  * @author Dirk Weigenand
  */
@@ -53,10 +53,9 @@ public class JavaDocBuilder extends AntTaskBuilder {
     private static final String JAVADOC_BUILD_ALL_XML = "javadoc-build-all.xml";
 
     /**
-     * URLs to JavaDoc generated elsewhere that should be linked into the
-     * generated javadoc documentation.
+     * URLs to JavaDoc generated elsewhere that should be linked into the generated javadoc documentation.
      */
-    private Collection<String> links = new HashSet<String>();
+    private final Collection<String> links = new HashSet<String>();
 
     private boolean useUmlGraph;
 
@@ -67,7 +66,7 @@ public class JavaDocBuilder extends AntTaskBuilder {
         return useUmlGraph;
     }
 
-    public void setUseUmlGraph(boolean useUmlGraph) {
+    public void setUseUmlGraph(final boolean useUmlGraph) {
         this.useUmlGraph = useUmlGraph;
     }
 
@@ -75,30 +74,30 @@ public class JavaDocBuilder extends AntTaskBuilder {
      * @return the links
      */
     public Collection<String> getLinks() {
-        return this.links;
+        return links;
     }
 
-    public void setLinks(Collection<String> links) {
+    public void setLinks(final Collection<String> links) {
         if (links != null) {
-            for (String link : links) {
-                this.addLink(link);
+            for (final String link : links) {
+                addLink(link);
             }
         }
     }
 
-    void addLink(String link) {
-        String l = Util.fixEmpty(link);
+    void addLink(final String link) {
+        final String l = Util.fixEmpty(link);
 
         if (l != null) {
-            this.links.add(l);
+            links.add(l);
         }
     }
 
     // Fields in config.jelly must match the parameter names in the
     // "DataBoundConstructor"
     @DataBoundConstructor
-    public JavaDocBuilder(Collection<String> links, boolean useUmlGraph) {
-        this.setLinks(links);
+    public JavaDocBuilder(final Collection<String> links, final boolean useUmlGraph) {
+        setLinks(links);
         this.useUmlGraph = useUmlGraph;
     }
 
@@ -108,23 +107,20 @@ public class JavaDocBuilder extends AntTaskBuilder {
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) {
         final NWDIBuild nwdiBuild = (NWDIBuild)build;
+        final VelocityEngine velocityEngine = getVelocityEngine();
         final BuildFileGenerator executor =
-            new BuildFileGenerator(getAntHelper(), nwdiBuild.getDevelopmentComponentFactory(), this.links,
-                this.getVelocityEngine(listener.getLogger()), this.useUmlGraph);
+            new BuildFileGenerator(getAntHelper(), nwdiBuild.getDevelopmentComponentFactory(), links, velocityEngine, useUmlGraph);
 
-        for (final DevelopmentComponent component : nwdiBuild
-            .getAffectedDevelopmentComponents(new DCWithJavaSourceAcceptingFilter())) {
+        for (final DevelopmentComponent component : nwdiBuild.getAffectedDevelopmentComponents(new DCWithJavaSourceAcceptingFilter())) {
             executor.execute(component);
         }
 
-        OverviewGenerator overview =
-            new OverviewGenerator(new File(getAntHelper().getPathToWorkspace()),
-                nwdiBuild.getDevelopmentConfiguration());
+        final OverviewGenerator overview =
+            new OverviewGenerator(new File(getAntHelper().getPathToWorkspace()), nwdiBuild.getDevelopmentConfiguration());
         overview.execute();
-        createBuildFile(nwdiBuild.getWorkspace(), this.getVelocityEngine(listener.getLogger()),
-            executor.getBuildFilePaths());
+        createBuildFile(nwdiBuild.getWorkspace(), velocityEngine, executor.getBuildFilePaths());
 
-        return this.execute(nwdiBuild, launcher, listener, "javadoc-all", JAVADOC_BUILD_ALL_XML, null);
+        return execute(nwdiBuild, launcher, listener, "javadoc-all", JAVADOC_BUILD_ALL_XML, null);
     }
 
     /**
@@ -132,9 +128,10 @@ public class JavaDocBuilder extends AntTaskBuilder {
      * 
      * @return the properties to use when calling ant.
      */
+    @Override
     protected String getAntProperties() {
-        return String.format("umlgraph.dir=%s/plugins/NWDI-JavaDoc-Plugin/WEB-INF/lib", Hudson.getInstance().root
-            .getAbsolutePath().replace("\\", "/"));
+        return String.format("umlgraph.dir=%s/plugins/NWDI-JavaDoc-Plugin/WEB-INF/lib", Hudson.getInstance().root.getAbsolutePath()
+            .replace("\\", "/"));
     }
 
     /**
@@ -144,19 +141,23 @@ public class JavaDocBuilder extends AntTaskBuilder {
      *            workspace where to create the build file
      * @param engine
      *            velocity engine to use for creating the build file
-     * @param paths
+     * @param buildFiles
      *            to build files
      */
-    private void createBuildFile(final FilePath workspace, VelocityEngine engine, final Collection<String> buildFiles) {
+    private void createBuildFile(final FilePath workspace, final VelocityEngine engine, final Collection<String> buildFiles) {
         try {
-            StringWriter buildFile = new StringWriter();
-            Context context = new VelocityContext();
+            final StringWriter buildFile = new StringWriter();
+            final Context context = new VelocityContext();
             context.put("buildFiles", buildFiles);
             engine.evaluate(context, buildFile, JAVADOC_BUILD_ALL_TARGET, getTemplateReader(JAVADOC_BUILD_ALL_VM));
             workspace.child(JAVADOC_BUILD_ALL_XML).write(buildFile.toString(), "UTF-8");
         }
-        catch (Exception e) {
-            throw new RuntimeException(e);
+        catch (final IOException e) {
+            throw new IllegalStateException(e);
+        }
+        catch (final InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -169,8 +170,7 @@ public class JavaDocBuilder extends AntTaskBuilder {
     }
 
     /**
-     * Descriptor for {@link JavaDocBuilder}. Used as a singleton. The class is
-     * marked as public so that it can be accessed from views.
+     * Descriptor for {@link JavaDocBuilder}. Used as a singleton. The class is marked as public so that it can be accessed from views.
      */
     @Extension
     // This indicates to Jenkins that this is an implementation of an extension
@@ -199,20 +199,20 @@ public class JavaDocBuilder extends AntTaskBuilder {
          * {@inheritDoc}
          */
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            JavaDocBuilder builder = new JavaDocBuilder();
+        public Builder newInstance(final StaplerRequest req, final JSONObject formData) throws FormException {
+            final JavaDocBuilder builder = new JavaDocBuilder();
 
             builder.setUseUmlGraph(Boolean.valueOf(formData.getString("useUmlGraph")));
-            JSONObject config = (JSONObject)formData.get("advancedConfiguration");
+            final JSONObject config = (JSONObject)formData.get("advancedConfiguration");
 
             if (config != null) {
-                JSONObject linkConfig = config.getJSONObject("links");
+                final JSONObject linkConfig = config.getJSONObject("links");
 
                 if (linkConfig.isArray()) {
-                    JSONArray linkCfg = config.getJSONArray("links");
+                    final JSONArray linkCfg = config.getJSONArray("links");
 
                     for (int i = 0; i < linkCfg.size(); i++) {
-                        JSONObject entry = linkCfg.getJSONObject(i);
+                        final JSONObject entry = linkCfg.getJSONObject(i);
                         builder.addLink(entry.getString("link"));
                     }
                 }
