@@ -14,7 +14,6 @@ import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -114,7 +113,7 @@ final class BuildFileGenerator {
     /**
      * @return the buildFilePaths
      */
-    final Collection<String> getBuildFilePaths() {
+    Collection<String> getBuildFilePaths() {
         return buildFilePaths;
     }
 
@@ -125,11 +124,7 @@ final class BuildFileGenerator {
      *            development component to document with JavaDoc.
      */
     public void execute(final DevelopmentComponent component) {
-        final Set<String> sources = new HashSet<String>();
-
-        for (final String folder : antHelper.createSourceFileSets(component)) {
-            sources.add(folder);
-        }
+        final Collection<String> sources = antHelper.createSourceFileSets(component);
 
         if (!sources.isEmpty()) {
             final Context context = createContext(component, sources);
@@ -182,7 +177,7 @@ final class BuildFileGenerator {
      * @param sources
      * @return
      */
-    private Context createContext(final DevelopmentComponent component, final Set<String> sources) {
+    private Context createContext(final DevelopmentComponent component, final Collection<String> sources) {
         final Context context = new VelocityContext();
         context.put("sourcePaths", sources);
         context.put("classes", component.getOutputFolder());
