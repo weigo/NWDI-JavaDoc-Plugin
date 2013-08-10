@@ -6,10 +6,13 @@ package org.arachna.netweaver.javadoc;
 import hudson.Util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +30,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.arachna.netweaver.dc.types.Compartment;
 import org.arachna.netweaver.dc.types.CompartmentByNameComparator;
 import org.arachna.netweaver.dc.types.CompartmentState;
@@ -51,22 +55,22 @@ final class OverviewGenerator {
     private final DevelopmentConfiguration developmentConfiguration;
     private final File workspace;
 
-    OverviewGenerator(File workspace, DevelopmentConfiguration developmentConfiguration) {
+    OverviewGenerator(final File workspace, final DevelopmentConfiguration developmentConfiguration) {
         this.workspace = workspace;
         this.developmentConfiguration = developmentConfiguration;
 
     }
 
     void execute() {
-        File javaDocFolder = new File(workspace, "javadoc");
+        final File javaDocFolder = new File(workspace, "javadoc");
 
         if (!javaDocFolder.exists()) {
             if (!javaDocFolder.mkdirs()) {
-                throw new RuntimeException("Could not mkdir " + javaDocFolder.getAbsolutePath());
+                throw new IllegalStateException("Could not mkdir " + javaDocFolder.getAbsolutePath());
             }
         }
 
-        createIndexHtml(new File(javaDocFolder, "index.html"));
+        createIndexHtml(javaDocFolder);
         createStyleCss(new File(javaDocFolder, "style.css"));
     }
 
@@ -74,14 +78,14 @@ final class OverviewGenerator {
      * @param javaDocFolder
      * @throws IOException
      */
-    private void createStyleCss(File styleCss) {
+    private void createStyleCss(final File styleCss) {
         Writer writer = null;
 
         try {
             writer = new FileWriter(styleCss);
             Util.copyStream(new InputStreamReader(this.getClass().getResourceAsStream("style.css")), writer);
         }
-        catch (IOException e) {
+        catch (final IOException e) {
             throw new RuntimeException(e);
         }
         finally {
@@ -89,9 +93,8 @@ final class OverviewGenerator {
                 try {
                     writer.close();
                 }
-                catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                catch (final IOException e) {
+                    Logger.getLogger(getClass()).error("", e);
                 }
             }
         }
@@ -104,42 +107,55 @@ final class OverviewGenerator {
      * @param configuration
      *            {@link DevelopmentConfiguration} to generate entry page for.
      */
-    protected void createIndexHtml(File output) {
+    protected void createIndexHtml(final File baseDir) {
         Writer result = null;
+        Writer indexXml = null;
 
         try {
-            result = new FileWriter(output);
-            Transformer transformer =
-                TransformerFactory.newInstance().newTransformer(
-                    new StreamSource(this.getClass().getResourceAsStream("JavaDocIndex.xsl")));
+            result = new OutputStreamWriter(new FileOutputStream(new File(baseDir, "index.html")), Charset.forName("UTF-8"));
+            indexXml = new OutputStreamWriter(new FileOutputStream(new File(baseDir, "index.xml")), Charset.forName("UTF-8"));
+            final Transformer transformer =
+                TransformerFactory.newInstance().newTransformer(new StreamSource(this.getClass().getResourceAsStream("JavaDocIndex.xsl")));
             transformer.setParameter("track", this.developmentConfiguration.getCaption());
-            transformer.transform(createIndexDom(), new StreamResult(result));
+            final DOMSource indexDom = createIndexDom();
+            transformer.transform(indexDom, new StreamResult(result));
+
+            TransformerFactory.newInstance().newTransformer().transform(indexDom, new StreamResult(indexXml));
         }
-        catch (IOException e) {
-            throw new RuntimeException(e);
+        catch (final IOException e) {
+            throw new IllegalStateException(e);
         }
-        catch (TransformerConfigurationException e) {
-            throw new RuntimeException(e);
+        catch (final TransformerConfigurationException e) {
+            throw new IllegalStateException(e);
         }
-        catch (TransformerFactoryConfigurationError e) {
-            throw new RuntimeException(e);
+        catch (final TransformerFactoryConfigurationError e) {
+            throw new IllegalStateException(e);
         }
-        catch (TransformerException e) {
-            throw new RuntimeException(e);
+        catch (final TransformerException e) {
+            throw new IllegalStateException(e);
         }
-        catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
+        catch (final ParserConfigurationException e) {
+            throw new IllegalStateException(e);
         }
         finally {
             if (result != null) {
                 try {
                     result.close();
                 }
-                catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                catch (final IOException e) {
+                    Logger.getLogger(getClass()).error("", e);
                 }
             }
+
+            if (indexXml != null) {
+                try {
+                    indexXml.close();
+                }
+                catch (final IOException e) {
+                    Logger.getLogger(getClass()).error("", e);
+                }
+            }
+
         }
     }
 
@@ -148,20 +164,20 @@ final class OverviewGenerator {
      * @return
      */
     public DOMSource createIndexDom() throws ParserConfigurationException, IOException {
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document document = builder.newDocument();
-        Element compartments = document.createElement("compartments");
+        final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        final Document document = builder.newDocument();
+        final Element compartments = document.createElement("compartments");
         document.appendChild(compartments);
 
-        for (Compartment compartment : getNonEmptyCompartmentsSortedAlphabetically(this.developmentConfiguration)) {
-            Collection<DevelopmentComponent> components = this.getDevelopmentComponentsWithJavaSources(compartment);
+        for (final Compartment compartment : getNonEmptyCompartmentsSortedAlphabetically(this.developmentConfiguration)) {
+            final Collection<DevelopmentComponent> components = this.getDevelopmentComponentsWithJavaSources(compartment);
 
-            Element compartmentElement = document.createElement("compartment");
+            final Element compartmentElement = document.createElement("compartment");
             compartmentElement.setAttribute("name", compartment.getSoftwareComponent());
             compartments.appendChild(compartmentElement);
 
-            for (DevelopmentComponent component : components) {
-                Element dc = document.createElement("dc");
+            for (final DevelopmentComponent component : components) {
+                final Element dc = document.createElement("dc");
                 compartmentElement.appendChild(dc);
 
                 dc.setAttribute("vendor", component.getVendor());
@@ -179,10 +195,10 @@ final class OverviewGenerator {
      * @param configuration
      * @return
      */
-    private List<Compartment> getNonEmptyCompartmentsSortedAlphabetically(DevelopmentConfiguration configuration) {
-        List<Compartment> compartments = new ArrayList<Compartment>();
+    private List<Compartment> getNonEmptyCompartmentsSortedAlphabetically(final DevelopmentConfiguration configuration) {
+        final List<Compartment> compartments = new ArrayList<Compartment>();
 
-        for (Compartment compartment : configuration.getCompartments(CompartmentState.Source)) {
+        for (final Compartment compartment : configuration.getCompartments(CompartmentState.Source)) {
             if (!compartment.getDevelopmentComponents().isEmpty()) {
                 compartments.add(compartment);
             }
@@ -193,11 +209,11 @@ final class OverviewGenerator {
         return compartments;
     }
 
-    private Collection<DevelopmentComponent> getDevelopmentComponentsWithJavaSources(Compartment compartment) {
-        Collection<DevelopmentComponent> components = new ArrayList<DevelopmentComponent>();
-        DCWithJavaSourceAcceptingFilter filter = new DCWithJavaSourceAcceptingFilter();
+    private Collection<DevelopmentComponent> getDevelopmentComponentsWithJavaSources(final Compartment compartment) {
+        final Collection<DevelopmentComponent> components = new ArrayList<DevelopmentComponent>();
+        final DCWithJavaSourceAcceptingFilter filter = new DCWithJavaSourceAcceptingFilter();
 
-        for (DevelopmentComponent component : compartment.getDevelopmentComponents()) {
+        for (final DevelopmentComponent component : compartment.getDevelopmentComponents()) {
             if (filter.accept(component)) {
                 components.add(component);
             }
