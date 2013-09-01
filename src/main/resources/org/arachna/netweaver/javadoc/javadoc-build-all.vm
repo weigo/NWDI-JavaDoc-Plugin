@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="javadoc-project" default="javadoc-all">
-  <target name="javadoc-all">
-    <echo>Running javadoc...</echo>
-      #foreach ( $buildFile in $buildFiles )
-      <ant antfile="$buildFile" />
-      #end
-  </target>
-</project>
