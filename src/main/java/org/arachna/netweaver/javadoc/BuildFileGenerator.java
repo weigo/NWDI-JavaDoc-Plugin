@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -55,11 +54,6 @@ final class BuildFileGenerator {
      * The template engine to use for build file generation.
      */
     private final VelocityEngine engine;
-
-    /**
-     * Paths to generated build files.
-     */
-    private final Collection<String> buildFilePaths = new HashSet<String>();
 
     /**
      * Indicate that UmlGraph should be used for generating UML images of class-
@@ -118,13 +112,6 @@ final class BuildFileGenerator {
     }
 
     /**
-     * @return the buildFilePaths
-     */
-    Collection<String> getBuildFilePaths() {
-        return buildFilePaths;
-    }
-
-    /**
      * Run the Ant Javadoc task for the given development component.
      * 
      * @param component
@@ -143,7 +130,6 @@ final class BuildFileGenerator {
                 location = createBuildXmlLocation(component);
                 buildFile = new FileWriter(location);
                 evaluateContext(context, buildFile);
-                buildFilePaths.add(location);
             }
             catch (final IOException e) {
                 throw new IllegalStateException(e);
@@ -168,9 +154,7 @@ final class BuildFileGenerator {
      * @return
      */
     private String createBuildXmlLocation(final DevelopmentComponent component) {
-        final String baseLocation = antHelper.getBaseLocation(component);
-        final String location = String.format("%s/javadoc-build.xml", baseLocation);
-        return location;
+        return String.format("%s/javadoc-build.xml", antHelper.getBaseLocation(component));
     }
 
     /**
@@ -269,12 +253,11 @@ final class BuildFileGenerator {
         final StringBuilder proxyConfig = new StringBuilder();
 
         if (proxy != null) {
-            final InetSocketAddress address = (InetSocketAddress)proxy.createProxy().address();
-            if (address.getPort() > 0) {
-                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s -J-Dhttp.proxyPort=%d", address.getHostName(), address.getPort()));
+            if (proxy.port > 0) {
+                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s -J-Dhttp.proxyPort=%d", proxy.name, proxy.port));
             }
             else {
-                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s", address.getHostName()));
+                proxyConfig.append(String.format("-J-Dhttp.proxyHost=%s", proxy.name));
             }
         }
 
