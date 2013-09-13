@@ -86,6 +86,17 @@ public class JavaDocBuilder extends AntTaskBuilder {
     public JavaDocBuilder() {
     }
 
+    /**
+     * Generate JavaDoc documentation for the development components modified in
+     * the current build.
+     * 
+     * @param build
+     *            the build ask for modified development components.
+     * @param launcher
+     *            launcher to use to execute the Ant JavaDoc task.
+     * @param listener
+     *            the listener to use for logging.
+     */
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) {
         final NWDIBuild nwdiBuild = (NWDIBuild)build;
@@ -93,17 +104,22 @@ public class JavaDocBuilder extends AntTaskBuilder {
         final BuildFileGenerator generator =
             new BuildFileGenerator(getAntHelper(), nwdiBuild.getDevelopmentComponentFactory(), links, velocityEngine, useUmlGraph);
 
-        for (final DevelopmentComponent component : nwdiBuild.getAffectedDevelopmentComponents(new DCWithJavaSourceAcceptingFilter())) {
-            final String location = generator.execute(component);
+        try {
+            for (final DevelopmentComponent component : nwdiBuild.getAffectedDevelopmentComponents(new DCWithJavaSourceAcceptingFilter())) {
+                final String location = generator.execute(component);
 
-            if (location != null) {
-                execute(nwdiBuild, launcher, listener, "javadoc", location, null);
+                if (location != null) {
+                    execute(nwdiBuild, launcher, listener, "javadoc", location, null);
+                }
             }
-        }
 
-        final OverviewGenerator overview =
-            new OverviewGenerator(new File(getAntHelper().getPathToWorkspace()), nwdiBuild.getDevelopmentConfiguration());
-        overview.execute();
+            final OverviewGenerator overview =
+                new OverviewGenerator(new File(getAntHelper().getPathToWorkspace()), nwdiBuild.getDevelopmentConfiguration());
+            overview.execute();
+        }
+        catch (final InterruptedException e) {
+            // simply quit execution.
+        }
 
         return true;
     }
