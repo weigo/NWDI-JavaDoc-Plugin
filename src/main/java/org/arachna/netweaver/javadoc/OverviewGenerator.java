@@ -35,6 +35,8 @@ import org.arachna.netweaver.dc.types.Compartment;
 import org.arachna.netweaver.dc.types.CompartmentByNameComparator;
 import org.arachna.netweaver.dc.types.CompartmentState;
 import org.arachna.netweaver.dc.types.DevelopmentComponent;
+import org.arachna.netweaver.dc.types.DevelopmentComponentByTypeFilter;
+import org.arachna.netweaver.dc.types.DevelopmentComponentType;
 import org.arachna.netweaver.dc.types.DevelopmentConfiguration;
 import org.arachna.netweaver.hudson.nwdi.DCWithJavaSourceAcceptingFilter;
 import org.w3c.dom.Document;
@@ -53,14 +55,29 @@ final class OverviewGenerator {
      * for all development components containing java sources.
      */
     private final DevelopmentConfiguration developmentConfiguration;
+
+    /**
+     * Workspace where to create JavaDoc documentation.
+     */
     private final File workspace;
 
+    /**
+     * Create generator for JavaDoc overview page.
+     * 
+     * @param workspace
+     *            workspace folder where to create overview page.
+     * @param developmentConfiguration
+     *            development configuration to create overview page for.
+     */
     OverviewGenerator(final File workspace, final DevelopmentConfiguration developmentConfiguration) {
         this.workspace = workspace;
         this.developmentConfiguration = developmentConfiguration;
 
     }
 
+    /**
+     * Create overview page.
+     */
     void execute() {
         final File javaDocFolder = new File(workspace, "javadoc");
 
@@ -71,19 +88,24 @@ final class OverviewGenerator {
         }
 
         createIndexHtml(javaDocFolder);
-        createStyleCss(new File(javaDocFolder, "style.css"));
+        copyResourceTo(javaDocFolder, "style.css");
+        copyResourceTo(javaDocFolder, "html5shiv.js");
     }
 
     /**
-     * @param javaDocFolder
-     * @throws IOException
+     * Copy resource from class path to given parent directory.
+     * 
+     * @param parent
+     *            the JavaDoc folder in workspace.
+     * @param resourceName
+     *            name of resource to copy.
      */
-    private void createStyleCss(final File styleCss) {
+    private void copyResourceTo(final File parent, final String resourceName) {
         Writer writer = null;
 
         try {
-            writer = new FileWriter(styleCss);
-            Util.copyStream(new InputStreamReader(this.getClass().getResourceAsStream("style.css")), writer);
+            writer = new FileWriter(new File(parent, resourceName));
+            Util.copyStream(new InputStreamReader(this.getClass().getResourceAsStream(resourceName)), writer);
         }
         catch (final IOException e) {
             throw new RuntimeException(e);
@@ -160,7 +182,6 @@ final class OverviewGenerator {
     }
 
     /**
-     * @param javaDocFolder
      * @return
      */
     public DOMSource createIndexDom() throws ParserConfigurationException, IOException {
@@ -172,19 +193,32 @@ final class OverviewGenerator {
         for (final Compartment compartment : getNonEmptyCompartmentsSortedAlphabetically(this.developmentConfiguration)) {
             final Collection<DevelopmentComponent> components = this.getDevelopmentComponentsWithJavaSources(compartment);
 
-            final Element compartmentElement = document.createElement("compartment");
-            compartmentElement.setAttribute("name", compartment.getSoftwareComponent());
-            compartments.appendChild(compartmentElement);
+            if (!components.isEmpty()) {
+                final Element compartmentElement = document.createElement("compartment");
+                compartmentElement.setAttribute("name", compartment.getSoftwareComponent());
+                compartmentElement.setAttribute("vendor", compartment.getVendor());
+                compartments.appendChild(compartmentElement);
 
-            for (final DevelopmentComponent component : components) {
-                final Element dc = document.createElement("dc");
-                compartmentElement.appendChild(dc);
+                final List<DevelopmentComponent> descriptions =
+                    new ArrayList<DevelopmentComponent>(compartment.getDevelopmentComponents(new DevelopmentComponentByTypeFilter(
+                        DevelopmentComponentType.SoftwareComponentDescription)));
 
-                dc.setAttribute("vendor", component.getVendor());
-                dc.setAttribute("name", component.getName());
-                dc.setAttribute("folder", component.getVendor() + "~" + component.getName().replace('/', '~'));
+                if (!descriptions.isEmpty()) {
+                    final Element description = document.createElement("description");
+                    description.setTextContent(descriptions.get(0).getDescription());
+                    compartmentElement.appendChild(description);
+                }
 
-                dc.appendChild(document.createTextNode(component.getDescription()));
+                for (final DevelopmentComponent component : components) {
+                    final Element dc = document.createElement("dc");
+                    compartmentElement.appendChild(dc);
+
+                    dc.setAttribute("vendor", component.getVendor());
+                    dc.setAttribute("name", component.getName());
+                    dc.setAttribute("folder", component.getVendor() + "~" + component.getName().replace('/', '~'));
+
+                    dc.appendChild(document.createTextNode(component.getDescription()));
+                }
             }
         }
 
