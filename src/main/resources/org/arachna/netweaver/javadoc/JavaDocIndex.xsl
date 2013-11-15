@@ -63,6 +63,9 @@
   <xsl:template match="compartment">
     <article>
       <header>
+        <xsl:element name="a">
+          <xsl:attribute name="name"><xsl:value-of select="concat(@vendor, '_', @name)" /></xsl:attribute>
+        </xsl:element>
         <h2>
           <xsl:value-of select="concat(@vendor, ' ', @name)" />
         </h2>
@@ -71,9 +74,6 @@
         </p>
       </header>
       <section>
-        <xsl:element name="a">
-          <xsl:attribute name="name"><xsl:value-of select="@name" /></xsl:attribute>
-        </xsl:element>
         <xsl:element name="dl">
           <xsl:apply-templates select="dc" />
         </xsl:element>
